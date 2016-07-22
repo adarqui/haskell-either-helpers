@@ -13,8 +13,9 @@ module Haskell.Helpers.Either (
 
 
 import           Control.Monad.Trans.Either (EitherT)
-import qualified Control.Monad.Trans.Either as Either
+import qualified Control.Monad.Trans.Either as EitherT
 import           Data.Either
+import           Prelude                    hiding (Either)
 
 
 
@@ -38,11 +39,10 @@ rightF = pure . Right
 
 
 
-
-leftT :: forall (m :: * -> *) a e. Monad m => e -> Either.EitherT e m a
-leftT e = Either.left e
-
+leftT :: forall (m :: * -> *) a e. Monad m => e -> EitherT e m a
+leftT e = EitherT.left e
 
 
-rightT :: forall a (m :: * -> *) e. Monad m => a -> Either.EitherT e m a
-rightT = Either.right
+
+rightT :: forall a (m :: * -> *) e. Monad m => a -> EitherT e m a
+rightT = EitherT.right

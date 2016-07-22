@@ -19,16 +19,18 @@ library
   build-depends:       base >= 4.7 && < 5
                      , either
                      , transformers
+  ghc-options:         -Wall -Werror
   default-language:    Haskell2010
 
 test-suite haskell-either-helpers-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
+  other-modules:       Haskell.Helpers.EitherSpec
   build-depends:       base
                      , hspec
                      , haskell-either-helpers
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  ghc-options:         -Wall -Werror -O2 -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 
 source-repository head
