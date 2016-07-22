@@ -7,12 +7,12 @@ module Haskell.Helpers.EitherSpec (
 
 
 
-import Control.Monad.IO.Class (liftIO)
-import Control.Concurrent.MVar (newMVar, readMVar, modifyMVar_)
+import           Control.Concurrent.MVar    (modifyMVar_, newMVar, readMVar)
 import           Control.Monad.Identity
+import           Control.Monad.IO.Class     (liftIO)
 import           Control.Monad.Trans.Either (EitherT, runEitherT)
+import           Data.Either                (isRight)
 import           Haskell.Helpers.Either
-import Data.Either (isRight)
 import           Test.Hspec
 
 
