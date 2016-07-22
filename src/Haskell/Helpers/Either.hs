@@ -13,7 +13,8 @@ module Haskell.Helpers.Either (
   assertBoolT,
   assertRightT,
   assertT,
-  mustPassT
+  mustPassT,
+  assertRetryT
 ) where
 
 
@@ -22,7 +23,6 @@ import           Control.Monad.Trans        (lift)
 import           Control.Monad.Trans.Either (EitherT)
 import qualified Control.Monad.Trans.Either as EitherT
 import           Data.Either
-import Data.Either.Combinators (fromRight', fromLeft')
 import           Prelude                    hiding (Either)
 
 
@@ -85,12 +85,12 @@ assertRightT go = do
 
 
 
-assertT :: forall (m :: * -> *) a e. Monad m => (Either e a -> Bool) -> m (Either e a) -> EitherT e m a
+assertT :: forall (m :: * -> *) a e. Monad m => (Either e a -> Bool) -> m (Either e a) -> EitherT () m a
 assertT test go = do
-  result <- lift go
-  if test result
-    then rightT $ fromRight' result
-    else leftT $ fromLeft' result
+  lr <- lift go
+  case lr of
+    Left _  -> if test lr then rightT undefined else leftT ()
+    Right r -> if test lr then rightT r else leftT ()
 
 
 
@@ -100,3 +100,25 @@ mustPassT go = do
   case result of
     Left _  -> leftT ()
     Right a -> rightT a
+
+
+
+-- | Retry `retries` times until a success
+--
+assertRetryT
+  :: forall (m :: * -> *) a e. Monad m
+  => Int
+  -> (Either e a -> Bool)
+  -> m (Either e a)
+  -> EitherT () m a
+assertRetryT retries test go = do
+
+  lr <- lift $ EitherT.runEitherT $ do
+    assertT test go
+
+  case lr of
+    Left _  -> do
+      if retries == 0
+        then leftT ()
+        else assertRetryT (retries-1) test go
+    Right v -> rightT v

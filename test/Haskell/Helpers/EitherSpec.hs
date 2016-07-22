@@ -7,9 +7,12 @@ module Haskell.Helpers.EitherSpec (
 
 
 
+import Control.Monad.IO.Class (liftIO)
+import Control.Concurrent.MVar (newMVar, readMVar, modifyMVar_)
 import           Control.Monad.Identity
 import           Control.Monad.Trans.Either (EitherT, runEitherT)
 import           Haskell.Helpers.Either
+import Data.Either (isRight)
 import           Test.Hspec
 
 
@@ -75,3 +78,24 @@ spec = do
         _ <- mustPassT $ leftF ()
         c <- mustPassT $ rightF 'c'
         pure (a:b:c:[])) `shouldReturn` (Left ())
+
+      (runEitherT $ do
+        assertRetryT 5 isRight ((leftF ()) :: IO (Either () Bool))) `shouldReturn` (Left ())
+
+      (runEitherT $ do
+        mvar <- liftIO $ newMVar (4 :: Int)
+        assertRetryT 5 isRight $ do
+          n <- liftIO $ readMVar mvar
+          if n == 1
+            then rightF n
+            else (liftIO $ modifyMVar_ mvar (pure . pred)) *> leftF n
+          ) `shouldReturn` (Right 1)
+
+      (runEitherT $ do
+        mvar <- liftIO $ newMVar (7 :: Int)
+        assertRetryT 5 isRight $ do
+          n <- liftIO $ readMVar mvar
+          if n == 1
+            then rightF n
+            else (liftIO $ modifyMVar_ mvar (pure . pred)) *> leftF ()
+          ) `shouldReturn` (Left ())
