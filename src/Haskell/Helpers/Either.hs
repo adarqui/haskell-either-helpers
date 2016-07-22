@@ -10,7 +10,10 @@ module Haskell.Helpers.Either (
   rightT,
   assertTrueT,
   assertFalseT,
-  assertBoolT
+  assertBoolT,
+  assertRightT,
+  assertT,
+  mustPassT
 ) where
 
 
@@ -19,6 +22,7 @@ import           Control.Monad.Trans        (lift)
 import           Control.Monad.Trans.Either (EitherT)
 import qualified Control.Monad.Trans.Either as EitherT
 import           Data.Either
+import Data.Either.Combinators (fromRight', fromLeft')
 import           Prelude                    hiding (Either)
 
 
@@ -69,3 +73,30 @@ assertBoolT bool go = do
   if result == bool
     then rightT True
     else leftT ()
+
+
+
+assertRightT :: forall (m :: * -> *) a e. Monad m => m (Either e a) -> EitherT e m a
+assertRightT go = do
+  result <- lift go
+  case result of
+    Left e  -> leftT e
+    Right a -> rightT a
+
+
+
+assertT :: forall (m :: * -> *) a e. Monad m => (Either e a -> Bool) -> m (Either e a) -> EitherT e m a
+assertT test go = do
+  result <- lift go
+  if test result
+    then rightT $ fromRight' result
+    else leftT $ fromLeft' result
+
+
+
+mustPassT :: forall (m :: * -> *) a e. Monad m => m (Either e a) -> EitherT () m a
+mustPassT go = do
+  result <- lift go
+  case result of
+    Left _  -> leftT ()
+    Right a -> rightT a
