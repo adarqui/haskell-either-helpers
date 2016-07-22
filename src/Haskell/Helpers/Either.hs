@@ -22,7 +22,7 @@ module Haskell.Helpers.Either (
 import           Control.Monad.Trans        (lift)
 import           Control.Monad.Trans.Either (EitherT)
 import qualified Control.Monad.Trans.Either as EitherT
-import           Data.Either
+import           Data.Either                (Either (..))
 import           Prelude                    hiding (Either)
 
 
@@ -48,7 +48,7 @@ rightF = pure . Right
 
 
 leftT :: forall (m :: * -> *) a e. Monad m => e -> EitherT e m a
-leftT e = EitherT.left e
+leftT = EitherT.left
 
 
 
@@ -58,12 +58,12 @@ rightT = EitherT.right
 
 
 assertTrueT :: forall (m :: * -> *). Monad m => m Bool -> EitherT () m Bool
-assertTrueT go = assertBoolT True go
+assertTrueT = assertBoolT True
 
 
 
 assertFalseT :: forall (m :: * -> *). Monad m => m Bool -> EitherT () m Bool
-assertFalseT go = assertBoolT False go
+assertFalseT = assertBoolT False
 
 
 
@@ -113,11 +113,10 @@ assertRetryT
   -> EitherT () m a
 assertRetryT retries test go = do
 
-  lr <- lift $ EitherT.runEitherT $ do
-    assertT test go
+  lr <- lift $ EitherT.runEitherT $ assertT test go
 
   case lr of
-    Left _  -> do
+    Left _  ->
       if retries == 0
         then leftT ()
         else assertRetryT (retries-1) test go
