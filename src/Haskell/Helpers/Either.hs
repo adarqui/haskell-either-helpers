@@ -98,18 +98,18 @@ assertT test go = do
 
 
 
-mustPassT :: forall (m :: * -> *) a e. Monad m => m (Either e a) -> EitherT () m a
+mustPassT :: forall (m :: * -> *) a e. Monad m => m (Either e a) -> EitherT e m a
 mustPassT go = do
   result <- lift go
   case result of
-    Left _  -> leftT ()
+    Left e  -> leftT e
     Right a -> rightT a
 
 
 
 -- | An alias for mustPassT
 --
-mustT :: forall (m :: * -> *) a e. Monad m => m (Either e a) -> EitherT () m a
+mustT :: forall (m :: * -> *) a e. Monad m => m (Either e a) -> EitherT e m a
 mustT = mustPassT
 
 

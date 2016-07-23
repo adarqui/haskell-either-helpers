@@ -61,7 +61,7 @@ spec =
         pure y) `shouldReturn` Right True
 
       runEitherT (do
-        a <- mustPassT $ rightA 'a'
+        a <- mustPassT $ (rightA 'a' :: IO (Either () Char))
         b <- mustPassT $ rightA 'b'
         c  <- mustPassT $ rightA 'c'
         pure [a,b,c]) `shouldReturn` Right "abc"
@@ -81,7 +81,7 @@ spec =
         pure [a3,b3,c3]) `shouldReturn` Left ()
 
       runEitherT (do
-        a <- mustT $ rightA 'a'
+        a <- mustT $ (rightA 'a' :: IO (Either () Char))
         b <- mustT $ rightA 'b'
         c <- mustT $ rightA 'c'
         pure [a,b,c]) `shouldReturn` Right "abc"
