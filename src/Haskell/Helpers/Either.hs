@@ -15,6 +15,8 @@ module Haskell.Helpers.Either (
   assertT,
   mustPassT,
   mustT,
+  mustPassT',
+  mustT',
   assertRetryT,
   choiceEitherM,
   choiceEitherM'
@@ -22,12 +24,12 @@ module Haskell.Helpers.Either (
 
 
 
+import           Control.Monad.Loops        (firstM)
 import           Control.Monad.Trans        (lift)
 import           Control.Monad.Trans.Either (EitherT)
 import qualified Control.Monad.Trans.Either as EitherT
 import           Data.Either                (Either (..), isRight)
 import           Prelude                    hiding (Either)
-import           Control.Monad.Loops        (firstM)
 
 
 
@@ -111,6 +113,20 @@ mustPassT go = do
 --
 mustT :: forall (m :: * -> *) a e. Monad m => m (Either e a) -> EitherT e m a
 mustT = mustPassT
+
+
+
+mustPassT' :: forall (m :: * -> *) a e. Monad m => m (Either e a) -> EitherT () m a
+mustPassT' go = do
+  result <- lift go
+  case result of
+    Left _  -> leftT ()
+    Right a -> rightT a
+
+
+
+mustT' :: forall (m :: * -> *) a e. Monad m => m (Either e a) -> EitherT () m a
+mustT' = mustPassT'
 
 
 
