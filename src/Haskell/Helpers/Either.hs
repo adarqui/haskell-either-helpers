@@ -14,6 +14,7 @@ module Haskell.Helpers.Either (
   assertRightT,
   assertT,
   mustPassT,
+  mustT,
   assertRetryT
 ) where
 
@@ -100,6 +101,19 @@ mustPassT go = do
   case result of
     Left _  -> leftT ()
     Right a -> rightT a
+
+
+
+-- | An alias for mustPassT
+--
+mustT :: forall (m :: * -> *) a e. Monad m => m (Either e a) -> EitherT () m a
+mustT = mustPassT
+
+
+
+-- TODO
+-- mustNotPassT
+-- mustNotT
 
 
 

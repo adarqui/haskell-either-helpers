@@ -63,21 +63,41 @@ spec =
       runEitherT (do
         a <- mustPassT $ rightF 'a'
         b <- mustPassT $ rightF 'b'
-        c <- mustPassT $ rightF 'c'
+        c  <- mustPassT $ rightF 'c'
         pure [a,b,c]) `shouldReturn` Right "abc"
 
       runEitherT (do
         a2 <- mustPassT $ rightF 'a'
         b2 <- mustPassT $ rightF 'b'
         c2 <- mustPassT $ rightF 'c'
-        _ <- mustPassT $ leftF ()
+        _  <- mustPassT $ leftF ()
         pure [a2,b2,c2]) `shouldReturn` Left ()
 
       runEitherT (do
         a3 <- mustPassT $ rightF 'a'
         b3 <- mustPassT $ rightF 'b'
-        _ <- mustPassT $ leftF ()
+        _  <- mustPassT $ leftF ()
         c3 <- mustPassT $ rightF 'c'
+        pure [a3,b3,c3]) `shouldReturn` Left ()
+
+      runEitherT (do
+        a <- mustT $ rightF 'a'
+        b <- mustT $ rightF 'b'
+        c <- mustT $ rightF 'c'
+        pure [a,b,c]) `shouldReturn` Right "abc"
+
+      runEitherT (do
+        a2 <- mustT $ rightF 'a'
+        b2 <- mustT $ rightF 'b'
+        c2 <- mustT $ rightF 'c'
+        _  <- mustT $ leftF ()
+        pure [a2,b2,c2]) `shouldReturn` Left ()
+
+      runEitherT (do
+        a3 <- mustT $ rightF 'a'
+        b3 <- mustT $ rightF 'b'
+        _  <- mustT $ leftF ()
+        c3 <- mustT $ rightF 'c'
         pure [a3,b3,c3]) `shouldReturn` Left ()
 
       runEitherT
