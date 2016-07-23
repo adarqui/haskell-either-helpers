@@ -4,8 +4,8 @@
 module Haskell.Helpers.Either (
   left,
   right,
-  leftF,
-  rightF,
+  leftA,
+  rightA,
   leftT,
   rightT,
   assertTrueT,
@@ -15,7 +15,9 @@ module Haskell.Helpers.Either (
   assertT,
   mustPassT,
   mustT,
-  assertRetryT
+  assertRetryT,
+  choiceEitherM,
+  choiceEitherM'
 ) where
 
 
@@ -23,8 +25,9 @@ module Haskell.Helpers.Either (
 import           Control.Monad.Trans        (lift)
 import           Control.Monad.Trans.Either (EitherT)
 import qualified Control.Monad.Trans.Either as EitherT
-import           Data.Either                (Either (..))
+import           Data.Either                (Either (..), isRight)
 import           Prelude                    hiding (Either)
+import           Control.Monad.Loops        (firstM)
 
 
 
@@ -38,13 +41,13 @@ right = Right
 
 
 
-leftF :: forall (f :: * -> *) a e. Applicative f => e -> f (Either e a)
-leftF  = pure . Left
+leftA :: forall (f :: * -> *) a e. Applicative f => e -> f (Either e a)
+leftA  = pure . Left
 
 
 
-rightF :: forall (f :: * -> *) a e. Applicative f => a -> f (Either e a)
-rightF = pure . Right
+rightA :: forall (f :: * -> *) a e. Applicative f => a -> f (Either e a)
+rightA = pure . Right
 
 
 
@@ -135,3 +138,21 @@ assertRetryT retries test go = do
         then leftT ()
         else assertRetryT (retries-1) test go
     Right v -> rightT v
+
+
+
+choiceEitherM :: forall (m :: * -> *) a e def. Monad m => def -> [m (Either e a)] -> m (Either def (m (Either e a)))
+choiceEitherM def acts = do
+  m <- firstM (fmap isRight) acts
+  case m of
+    Nothing -> leftA def
+    Just r  -> rightA r
+
+
+
+choiceEitherM' :: forall (m :: * -> *) a e def. Monad m => def -> [m (Either e a)] -> m (Either def a)
+choiceEitherM' def acts = do
+  m <- firstM (fmap isRight) acts
+  case m of
+    Nothing  -> leftA def
+    Just act -> either (const $ leftA def) rightA =<< act

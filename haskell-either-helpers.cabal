@@ -18,6 +18,7 @@ library
   exposed-modules:     Haskell.Helpers.Either
   build-depends:       base >= 4.7 && < 5
                      , either
+                     , monad-loops
                      , mtl
                      , transformers
   ghc-options:         -Wall -Werror

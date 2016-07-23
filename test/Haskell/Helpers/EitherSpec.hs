@@ -32,8 +32,8 @@ spec =
       True `shouldBe` True
       (left False :: Either Bool ())             `shouldBe` Left False
       (right () :: Either Bool ())               `shouldBe` Right ()
-      (leftF False :: Identity (Either Bool ())) `shouldBe` pure (Left False)
-      (rightF () :: Identity (Either Bool ()))   `shouldBe` pure (Right ())
+      (leftA False :: Identity (Either Bool ())) `shouldBe` pure (Left False)
+      (rightA () :: Identity (Either Bool ()))   `shouldBe` pure (Right ())
 
       runEitherT (do
         void $ leftT False
@@ -57,59 +57,59 @@ spec =
 
 
       runEitherT (do
-        y <- (assertRightT $ rightF True) :: EitherT () IO Bool
+        y <- (assertRightT $ rightA True) :: EitherT () IO Bool
         pure y) `shouldReturn` Right True
 
       runEitherT (do
-        a <- mustPassT $ rightF 'a'
-        b <- mustPassT $ rightF 'b'
-        c  <- mustPassT $ rightF 'c'
+        a <- mustPassT $ rightA 'a'
+        b <- mustPassT $ rightA 'b'
+        c  <- mustPassT $ rightA 'c'
         pure [a,b,c]) `shouldReturn` Right "abc"
 
       runEitherT (do
-        a2 <- mustPassT $ rightF 'a'
-        b2 <- mustPassT $ rightF 'b'
-        c2 <- mustPassT $ rightF 'c'
-        _  <- mustPassT $ leftF ()
+        a2 <- mustPassT $ rightA 'a'
+        b2 <- mustPassT $ rightA 'b'
+        c2 <- mustPassT $ rightA 'c'
+        _  <- mustPassT $ leftA ()
         pure [a2,b2,c2]) `shouldReturn` Left ()
 
       runEitherT (do
-        a3 <- mustPassT $ rightF 'a'
-        b3 <- mustPassT $ rightF 'b'
-        _  <- mustPassT $ leftF ()
-        c3 <- mustPassT $ rightF 'c'
+        a3 <- mustPassT $ rightA 'a'
+        b3 <- mustPassT $ rightA 'b'
+        _  <- mustPassT $ leftA ()
+        c3 <- mustPassT $ rightA 'c'
         pure [a3,b3,c3]) `shouldReturn` Left ()
 
       runEitherT (do
-        a <- mustT $ rightF 'a'
-        b <- mustT $ rightF 'b'
-        c <- mustT $ rightF 'c'
+        a <- mustT $ rightA 'a'
+        b <- mustT $ rightA 'b'
+        c <- mustT $ rightA 'c'
         pure [a,b,c]) `shouldReturn` Right "abc"
 
       runEitherT (do
-        a2 <- mustT $ rightF 'a'
-        b2 <- mustT $ rightF 'b'
-        c2 <- mustT $ rightF 'c'
-        _  <- mustT $ leftF ()
+        a2 <- mustT $ rightA 'a'
+        b2 <- mustT $ rightA 'b'
+        c2 <- mustT $ rightA 'c'
+        _  <- mustT $ leftA ()
         pure [a2,b2,c2]) `shouldReturn` Left ()
 
       runEitherT (do
-        a3 <- mustT $ rightF 'a'
-        b3 <- mustT $ rightF 'b'
-        _  <- mustT $ leftF ()
-        c3 <- mustT $ rightF 'c'
+        a3 <- mustT $ rightA 'a'
+        b3 <- mustT $ rightA 'b'
+        _  <- mustT $ leftA ()
+        c3 <- mustT $ rightA 'c'
         pure [a3,b3,c3]) `shouldReturn` Left ()
 
       runEitherT
-        (assertRetryT 5 isRight (leftF () :: IO (Either () Bool))) `shouldReturn` Left ()
+        (assertRetryT 5 isRight (leftA () :: IO (Either () Bool))) `shouldReturn` Left ()
 
       runEitherT (do
         mvar <- liftIO $ newMVar (4 :: Int)
         assertRetryT 5 isRight $ do
           n <- liftIO $ readMVar mvar
           if n == 1
-            then rightF n
-            else liftIO $ modifyMVar_ mvar (pure . pred) *> leftF n
+            then rightA n
+            else liftIO $ modifyMVar_ mvar (pure . pred) *> leftA n
           ) `shouldReturn` Right 1
 
       runEitherT (do
@@ -117,6 +117,10 @@ spec =
         assertRetryT 5 isRight $ do
           n <- liftIO $ readMVar mvar
           if n == 1
-            then rightF n
-            else liftIO $ modifyMVar_ mvar (pure . pred) *> leftF ()
+            then rightA n
+            else liftIO $ modifyMVar_ mvar (pure . pred) *> leftA ()
           ) `shouldReturn` Left ()
+
+      choiceEitherM' () [(leftA ()) :: IO (Either () Int), leftA ()] `shouldReturn` Left ()
+
+      choiceEitherM' () [leftA (), rightA 'x'] `shouldReturn` Right 'x'
